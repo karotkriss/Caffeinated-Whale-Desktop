@@ -22,11 +22,13 @@ The application will be structured as follows:
 .
 ├── README.md                               # Project documentation
 ├── components.json                         # Configuration for components
+├── docs                                    # Documentation folder
+│   └── Design Doc.md                       # Detailed design document
 ├── next-env.d.ts                           # Next.js environment types
 ├── next.config.ts                          # Next.js configuration file
 ├── package-lock.json                       # Automatically generated lock file for npm dependencies
 ├── package.json                            # Project metadata and dependencies
-├── postcss.config.mjs                     # PostCSS configuration file
+├── postcss.config.mjs                      # PostCSS configuration file
 ├── public                                  # Static assets
 │   ├── file.svg                            # Example SVG asset
 │   ├── globe.svg                           # Example SVG asset
@@ -37,11 +39,17 @@ The application will be structured as follows:
 │   ├── app                                 # Application routes and components
 │   │   ├── favicon.ico                     # Application favicon
 │   │   ├── fonts                           # Custom fonts
-│   │   │   ├── GeistMonoVF.woff           # Font file
+│   │   │   ├── GeistMonoVF.woff            # Font file
 │   │   │   └── GeistVF.woff                # Font file
 │   │   ├── globals.css                     # Global CSS styles
 │   │   ├── layout.tsx                      # Main layout component
 │   │   └── page.tsx                        # Main entry page
+│   ├── components                           # Shared components across the app
+│   │   └── ui                              # UI components
+│   │       ├── button.tsx                   # Button component
+│   │       ├── card.tsx                     # Card component
+│   │       ├── input.tsx                    # Input component
+│   │       └── label.tsx                    # Label component
 │   └── lib                                 # Utility functions and libraries
 │       └── utils.ts                        # Utility functions
 ├── tailwind.config.ts                      # Tailwind CSS configuration file
@@ -56,7 +64,7 @@ The application will be structured as follows:
 - **Create New Instance**: A form to create a new instance that includes:
   - Project Name
   - Site Name
-  - Port (auto-detect available ports starting from 8000 skipping every 1000)
+  - Port (auto-detect available ports starting from 8000 checking every 1000)
 
 #### Instance Management
 
