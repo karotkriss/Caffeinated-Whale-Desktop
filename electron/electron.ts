@@ -92,7 +92,12 @@ class ElectronApp {
 
     return new Promise((resolve, reject) => {
       pythonProcess.stdout.on('data', (data: Buffer) => {
-        resolve(JSON.parse(data.toString().trim()))
+        try {
+          const instances = JSON.parse(data.toString().trim());
+          resolve(instances);
+        } catch (error) {
+          reject(`Error parsing JSON: ${error}`);
+        }
       })
 
       pythonProcess.stderr.on('data', (error: Buffer) => {

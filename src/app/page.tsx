@@ -8,8 +8,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
 interface FrappeInstance {
   projectName: string
-  siteName: string
-  port: number
+  ports: string[]
+  status: string
 }
 
 export default function Home() {
@@ -29,7 +29,7 @@ export default function Home() {
       console.log('Electron API not available')
       // You can set some mock data here for development in the browser
       setInstances([
-        { projectName: 'Mock Project', siteName: 'mock.site', port: 8000 }
+        { projectName: 'Mock Project', ports: ['8000'], status: 'running' }
       ])
     }
   }
@@ -74,20 +74,19 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Frappe Instances</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {instances.map((instance: FrappeInstance, index: number) => (
-              <div key={index} className="mb-4">
-                <h3 className="text-lg font-semibold">{instance.projectName}</h3>
-                <p>Site: {instance.siteName}</p>
-                <p>Port: {instance.port}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {instances.map((instance: FrappeInstance, index: number) => (
+            <Card key={index}>
+              <CardHeader>
+                <CardTitle>{instance.projectName}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p>Port: {instance.ports[0] || 'N/A'}</p>
+                <p>Status: {instance.status}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </main>
   )
