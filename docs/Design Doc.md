@@ -1,4 +1,3 @@
-Here’s the revised design document for the Electron application, incorporating the updated project structure you provided. The document reflects the new file tree and ensures clarity in the overall design and implementation steps.
 
 ## Design Document for Electron App Using Next.js, TypeScript, Shadcn, and Python
 
