@@ -1,13 +1,11 @@
 "use client";
 import type { Metadata } from "next";
-import { theme, setTheme, useTheme } from "next-themes"
 import { ThemeProvider } from "@/components/theme-provider"
 import { useState } from "react"
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { Home, Settings, Database, Moon, Sun } from 'lucide-react';
 import localFont from "next/font/local";
 import "./globals.css";
-import { IconArrowLeft, IconBrandTabler, IconSettings, IconUserBolt, IconHome} from "@tabler/icons-react";
+import { IconBrandTabler, IconSettings, IconHome } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -61,7 +59,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [open, setOpen] = useState(true);
-  const { theme, setTheme } = useTheme();
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -85,7 +82,7 @@ export default function RootLayout({
                   </div>
                 </div>
                 <div>
-                  
+                  { /* ToDo: implement theme toggler */ }
                 </div>
               </SidebarBody>
             </Sidebar>
