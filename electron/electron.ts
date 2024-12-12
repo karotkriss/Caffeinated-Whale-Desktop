@@ -1,6 +1,9 @@
 import { app, BrowserWindow, ipcMain } from 'electron'
 import * as path from 'path'
 import { spawn } from 'child_process'
+if (require('electron-squirrel-startup')) {
+  app.quit();
+}
 
 class ElectronApp {
   private mainWindow: BrowserWindow | null = null
@@ -42,6 +45,10 @@ class ElectronApp {
 
     if (process.env.NODE_ENV === 'development') {
       this.mainWindow.webContents.openDevTools()
+      require('electron-reload')(__dirname, {
+        electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
+        hardResetMethod: 'exit'
+      });
     }
   }
 
