@@ -15,6 +15,7 @@ AlertDialogHeader,
 AlertDialogTitle, 
 AlertDialogTrigger 
 } from '@/components/ui/alert-dialog'
+import { toast } from '@/hooks/use-toast'
 
 interface FrappeInstance {
   projectName: string
@@ -30,6 +31,7 @@ interface InstanceSettingsPopupProps {
 
 export function InstanceSettingsPopup({ instance, onClose, onReload }: InstanceSettingsPopupProps) {
   const [backupBeforeDelete, setBackupBeforeDelete] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleAddApp = async () => {
     // Implement add app functionality
@@ -42,12 +44,33 @@ export function InstanceSettingsPopup({ instance, onClose, onReload }: InstanceS
   }
 
   const handleDeleteInstance = async () => {
-    if (typeof window !== 'undefined' && window.electronAPI) {
-      await window.electronAPI.deleteInstance(instance.projectName, backupBeforeDelete)
-      onReload()
-      onClose()
-    } else {
-      console.log('Electron API not available')
+    setIsDeleting(true)
+    try {
+      if (typeof window !== 'undefined' && window.electronAPI) {
+        await window.electronAPI.deleteFrappeInstance(instance.projectName)
+        toast({
+          title: "Instance Deleted",
+          description: `${instance.projectName} has been successfully deleted.`,
+        })
+        onReload()
+        onClose()
+      } else {
+        console.log('Electron API not available')
+        toast({
+          title: "Error",
+          description: "Electron API is not available.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error('Error deleting instance:', error)
+      toast({
+        title: "Error",
+        description: `Failed to delete instance: ${error}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -70,7 +93,6 @@ export function InstanceSettingsPopup({ instance, onClose, onReload }: InstanceS
             </Label>
             <Input id="status" value={instance.status} className="col-span-3" readOnly />
           </div>
-          {/* Add more instance details here */}
         </div>
         <DialogFooter className="flex justify-between">
           <div>
@@ -79,7 +101,7 @@ export function InstanceSettingsPopup({ instance, onClose, onReload }: InstanceS
           </div>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="destructive" className='bg-red-600 hover:bg-red-700'>Delete Instance</Button>
+              <Button variant="destructive">Delete Instance</Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -99,12 +121,18 @@ export function InstanceSettingsPopup({ instance, onClose, onReload }: InstanceS
                   htmlFor="backup"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Backup before deleting
+                  Backup before deleting (not implemented yet)
                 </label>
               </div>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteInstance} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
+                <AlertDialogAction
+                  onClick={handleDeleteInstance}
+                  disabled={isDeleting}
+                  className={isDeleting ? 'cursor-not-allowed opacity-70' : ''}
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>

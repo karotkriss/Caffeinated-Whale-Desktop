@@ -8,9 +8,8 @@ import "./globals.css";
 import { IconBrandTabler, IconSettings, IconHome } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/toaster"
 
 
 const geistSans = localFont({
@@ -89,6 +88,7 @@ export default function RootLayout({
             <main className="flex-1 overflow-y-auto">
               {children}
             </main>
+            <Toaster />
           </div>
         </ThemeProvider>
       </body>

@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Settings, ExternalLink, HardDrive, Activity } from 'lucide-react'
 import { InstanceSettingsPopup } from '@/components/InstanceSettingsPopup'
 
+
 interface FrappeInstance {
   projectName: string
   ports: string[]
