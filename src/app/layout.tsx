@@ -58,6 +58,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const [open, setOpen] = useState(true);
+  console.log(metadata)
   return (
     <html lang="en" suppressHydrationWarning>
       <body
