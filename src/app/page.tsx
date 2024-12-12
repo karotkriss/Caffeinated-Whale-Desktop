@@ -51,29 +51,9 @@ export default function Home() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm">
-        <h1 className="text-4xl font-bold mb-8">Caffeinated Whale Desktop</h1>
-        
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Create New Frappe Instance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid w-full items-center gap-4">
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="projectName">Project Name</Label>
-                <Input id="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
-              </div>
-              <div className="flex flex-col space-y-1.5">
-                <Label htmlFor="siteName">Site Name</Label>
-                <Input id="siteName" value={siteName} onChange={(e) => setSiteName(e.target.value)} />
-              </div>
-              <Button onClick={handleCreateInstance}>Create Instance</Button>
-            </div>
-          </CardContent>
-        </Card>
-
+    <div className="flex min-h-screen flex-col items-center justify-between flex-1">
+      <div className="z-10 w-full items-center justify-between font-mono text-sm md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
+        <div className="flex gap-2">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {instances.map((instance: FrappeInstance, index: number) => (
             <Card key={index}>
@@ -87,8 +67,8 @@ export default function Home() {
             </Card>
           ))}
         </div>
+        </div>
       </div>
-    </main>
+    </div>
   )
 }
-

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Menu, X } from 'lucide-react';
+import { IconMenu2, IconX } from "@tabler/icons-react";
 
 interface Links {
   label: string;
@@ -120,7 +120,7 @@ export const MobileSidebar = ({
         {...props}
       >
         <div className="flex justify-end z-20 w-full">
-          <Menu
+          <IconMenu2
             className="text-neutral-800 dark:text-neutral-200"
             onClick={() => setOpen(!open)}
           />
@@ -144,7 +144,7 @@ export const MobileSidebar = ({
                 className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200"
                 onClick={() => setOpen(!open)}
               >
-                <X />
+                <IconX />
               </div>
               {children}
             </motion.div>
@@ -169,15 +169,12 @@ export const SidebarLink = ({
     <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-2 group/sidebar py-2",
-        !open && "justify-center", // Center icons when sidebar is closed
+        "flex items-center justify-start gap-2  group/sidebar py-2",
         className
       )}
       {...props}
     >
-      <div className="flex items-center justify-center w-6 h-6">
-        {link.icon}
-      </div>
+      {link.icon}
 
       <motion.span
         animate={{
@@ -191,4 +188,3 @@ export const SidebarLink = ({
     </Link>
   );
 };
-
