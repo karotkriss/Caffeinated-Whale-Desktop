@@ -80,10 +80,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="h-screen rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-100vh mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+          <div className="rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-7xl mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden h-screen">
             <Sidebar open={open} setOpen={setOpen} animate={sidebarMode === 'auto'}>
-              <SidebarBody className="flex flex-col h-full">
-                <div className="flex-1 overflow-y-auto overflow-x-hidden">
+              <SidebarBody className="justify-between gap-10">
+                <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
                   <Logo />
                   <div className="mt-8 flex flex-col gap-2">
                     {links.map((link, idx) => (
@@ -91,8 +91,10 @@ export default function RootLayout({
                     ))}
                   </div>
                 </div>
-                <div className="mt-auto">
-                  <SidebarModeToggle mode={sidebarMode} setMode={setSidebarMode} />
+                <div className="flex flex-col gap-2">
+                  <div className="hidden md:block">
+                    <SidebarModeToggle mode={sidebarMode} setMode={setSidebarMode} />
+                  </div>
                   <ThemeToggle />
                 </div>
               </SidebarBody>
