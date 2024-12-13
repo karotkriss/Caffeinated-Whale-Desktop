@@ -57,7 +57,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   console.log(metadata)
   return (
     <html lang="en" suppressHydrationWarning>
@@ -70,10 +70,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-100vh mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+          <div className="h-screen rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-100vh mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden">
             <Sidebar open={open} setOpen={setOpen}>
-              <SidebarBody className="flex flex-col justify-between h-full">
-                <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+              <SidebarBody className="flex flex-col h-full">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden">
                   <Logo />
                   <div className="mt-8 flex flex-col gap-2">
                     {links.map((link, idx) => (
