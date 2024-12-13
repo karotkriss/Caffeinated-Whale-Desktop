@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import localFont from "next/font/local";
 import "./globals.css";
-import { IconBrandTabler, IconSettings, IconHome, IconSun, IconMoon } from "@tabler/icons-react";
+import { IconBrandTabler, IconSettings, IconHome, IconSun, IconMoon, IconLayoutSidebar, IconLayoutSidebarLeftExpand } from "@tabler/icons-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -23,6 +23,7 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const metadata: Metadata = {
   title: "Caffeinated Whale Desktop",
   description: "Manage Frappe Docker instances",
@@ -52,13 +53,22 @@ const links = [
   },
 ];
 
+type SidebarMode = 'auto' | 'open';
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const [open, setOpen] = useState(false);
-  console.log(metadata)
+  const [sidebarMode, setSidebarMode] = useState<SidebarMode>('auto');
+
+  useEffect(() => {
+    if (sidebarMode === 'open') {
+      setOpen(true);
+    }
+  }, [sidebarMode]);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -71,7 +81,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <div className="h-screen rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-100vh mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden">
-            <Sidebar open={open} setOpen={setOpen}>
+            <Sidebar open={open} setOpen={setOpen} animate={sidebarMode === 'auto'}>
               <SidebarBody className="flex flex-col h-full">
                 <div className="flex-1 overflow-y-auto overflow-x-hidden">
                   <Logo />
@@ -82,6 +92,7 @@ export default function RootLayout({
                   </div>
                 </div>
                 <div className="mt-auto">
+                  <SidebarModeToggle mode={sidebarMode} setMode={setSidebarMode} />
                   <ThemeToggle />
                 </div>
               </SidebarBody>
@@ -123,6 +134,34 @@ export const LogoIcon = () => {
     >
       <Image src="/cw.png" alt="Logo" width={25} height={25} />
     </Link>
+  );
+};
+
+const SidebarModeToggle = ({ mode, setMode }: { mode: SidebarMode, setMode: (mode: SidebarMode) => void }) => {
+  const nextMode = {
+    'auto': 'open',
+    'open': 'auto'
+  } as const;
+
+  const icons = {
+    'auto': <IconLayoutSidebar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    'open': <IconLayoutSidebarLeftExpand className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+  } as const;
+
+  const labels = {
+    'auto': 'Auto',
+    'open': 'Open'
+  } as const;
+
+  return (
+    <SidebarLink
+      link={{
+        label: labels[mode],
+        href: "#",
+        icon: icons[mode],
+      }}
+      onClick={() => setMode(nextMode[mode])}
+    />
   );
 };
 
