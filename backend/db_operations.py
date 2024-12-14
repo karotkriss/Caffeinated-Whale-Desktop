@@ -72,6 +72,26 @@ def update_project(project_name, container_id, bench_dir, sites, apps):
     conn.commit()
     conn.close()
 
+
+def get_site_apps(project_name, site_name):
+    # Add a query to filter apps specifically for the given site
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+    SELECT a.name 
+    FROM projects p
+    JOIN containers c ON p.id = c.project_id
+    JOIN sites s ON c.id = s.container_id
+    JOIN apps a ON c.id = a.container_id
+    WHERE p.name = ? AND s.name = ?
+    ''', (project_name, site_name))
+    
+    apps = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    
+    return {"site": site_name, "installed_apps": apps}
+
 def get_project_info(project_name):
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
