@@ -40,5 +40,9 @@ yarn-error.log*
 next-env.d.ts
 dist
 
-#docs
+# docs
 docs/.obsidian
+
+# python
+__pycache__
+frappe_instances.db
