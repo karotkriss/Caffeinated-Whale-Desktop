@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Toaster } from "@/components/ui/toaster"
 import { useTheme } from "next-themes"
+import { useToast } from "@/hooks/use-toast"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -62,12 +63,23 @@ export default function RootLayout({
 }>) {
   const [open, setOpen] = useState(false);
   const [sidebarMode, setSidebarMode] = useState<SidebarMode>('auto');
+  const { toast } = useToast()
 
   useEffect(() => {
     if (sidebarMode === 'open') {
       setOpen(true);
     }
   }, [sidebarMode]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && !window.electronAPI) {
+      toast({
+        title: "Electron API not available",
+        description: "Some features may not work as expected.",
+        variant: "destructive",
+      })
+    }
+  }, [toast]);
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -80,7 +92,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-100vw mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden h-screen">
+          <div className="rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-100vw mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden">
             <Sidebar open={open} setOpen={setOpen} animate={sidebarMode === 'auto'}>
               <SidebarBody className="justify-between gap-10">
                 <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">

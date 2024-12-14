@@ -48,7 +48,7 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-between flex-1">
-      <div className="z-10 font-mono text-sm md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full h-full">
+      <div className="z-10 font-mono text-sm md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 flex flex-col gap-2 flex-1 w-full overflow-y-auto">
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {instances.map((instance: FrappeInstance, index: number) => (
             <Card key={index} className="relative">
