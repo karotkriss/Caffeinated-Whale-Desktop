@@ -1,7 +1,6 @@
 import docker
 import json
 
-
 def is_bench_directory(container, path):
     """Validate if a directory is a bench directory inside the container."""
     required_files = [
@@ -19,30 +18,34 @@ def is_bench_directory(container, path):
         print(f"Error validating bench directory: {e}")
         return False
 
-
 def find_bench_directory_in_container(container):
     """Search for the bench directory inside the container."""
-    search_root = "/home/frappe"
+    search_roots = ["/home/frappe", "/workspace"]
     search_depth = 3
-    try:
-        # Run the find command in the container
-        cmd = f"find {search_root} -maxdepth {search_depth} -type d"
-        exit_code, output = container.exec_run(cmd)
+    
+    for search_root in search_roots:
+        try:
+            # Check if the search_root exists
+            exit_code, _ = container.exec_run(f"test -d {search_root}")
+            if exit_code != 0:
+                continue  # Skip this search_root if it doesn't exist
 
-        if exit_code != 0:
-            raise Exception(f"Error executing command: {cmd}")
+            # Run the find command in the container
+            cmd = f"find {search_root} -maxdepth {search_depth} -type d"
+            exit_code, output = container.exec_run(cmd)
 
-        # Process the output and validate directories
-        for dirpath in output.decode("utf-8").splitlines():
-            if is_bench_directory(container, dirpath):
-                return dirpath
+            if exit_code != 0:
+                raise Exception(f"Error executing command: {cmd}")
 
-    except Exception as e:
-        print(f"Error searching for bench directory: {e}")
-        return None
+            # Process the output and validate directories
+            for dirpath in output.decode("utf-8").splitlines():
+                if is_bench_directory(container, dirpath):
+                    return dirpath
+
+        except Exception as e:
+            print(f"Error searching for bench directory in {search_root}: {e}")
 
     return None
-
 
 def get_frappe_containers():
     """Retrieve all containers labeled as Frappe service containers."""
@@ -55,7 +58,6 @@ def get_frappe_containers():
     except docker.errors.DockerException as e:
         print(f"Error interacting with Docker: {e}")
         return []
-
 
 def main():
     frappe_containers = get_frappe_containers()
@@ -74,6 +76,6 @@ def main():
 
     print(json.dumps(results, indent=2))
 
-
 if __name__ == "__main__":
     main()
+
