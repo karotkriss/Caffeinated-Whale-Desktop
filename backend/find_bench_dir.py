@@ -64,7 +64,7 @@ def get_sites(container, bench_dir):
     exit_code, _ = container.exec_run(f"test -d {bench_dir}/sites")
     if exit_code != 0:
         return []
-    cmd = f"sh -c 'ls {bench_dir}/sites | grep -v 'apps' | grep localhost$'"
+    cmd = f"bash -c 'ls {bench_dir}/sites | grep -v 'apps' | grep -v '.json' | grep -v 'assets''"
     exit_code, output = container.exec_run(cmd)
     if exit_code != 0:
         raise Exception(f"Error executing command: {cmd}")
@@ -87,7 +87,7 @@ def get_available_apps(container, bench_dir):
     exit_code, _ = container.exec_run(f"test -d {bench_dir}/apps")
     if exit_code != 0:
         return []
-    cmd = f"sh -c 'ls {bench_dir}/apps'"
+    cmd = f"bash -c 'ls {bench_dir}/apps'"
     exit_code, output = container.exec_run(cmd)
     if exit_code != 0:
         raise Exception(f"Error executing command: {cmd}")
