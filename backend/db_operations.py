@@ -27,6 +27,7 @@ def init_db():
         id INTEGER PRIMARY KEY,
         container_id INTEGER,
         name TEXT NOT NULL,
+        UNIQUE(container_id, name),
         FOREIGN KEY (container_id) REFERENCES containers (id)
     )
     ''')
@@ -35,6 +36,7 @@ def init_db():
         id INTEGER PRIMARY KEY,
         container_id INTEGER,
         name TEXT NOT NULL,
+        UNIQUE(container_id, name),
         FOREIGN KEY (container_id) REFERENCES containers (id)
     )
     ''')
@@ -59,13 +61,13 @@ def update_project(project_name, container_id, bench_dir, sites, apps):
     
     # Update sites
     cursor.execute('DELETE FROM sites WHERE container_id = ?', (container_db_id,))
-    for site in sites:
-        cursor.execute('INSERT INTO sites (container_id, name) VALUES (?, ?)', (container_db_id, site))
+    for site in set(sites):  # Use set to remove duplicates
+        cursor.execute('INSERT OR IGNORE INTO sites (container_id, name) VALUES (?, ?)', (container_db_id, site))
     
     # Update apps
     cursor.execute('DELETE FROM apps WHERE container_id = ?', (container_db_id,))
-    for app in apps:
-        cursor.execute('INSERT INTO apps (container_id, name) VALUES (?, ?)', (container_db_id, app))
+    for app in set(apps):  # Use set to remove duplicates
+        cursor.execute('INSERT OR IGNORE INTO apps (container_id, name) VALUES (?, ?)', (container_db_id, app))
     
     conn.commit()
     conn.close()
