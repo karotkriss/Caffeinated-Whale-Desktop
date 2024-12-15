@@ -12,6 +12,7 @@ import Image from "next/image";
 import { Toaster } from "@/components/ui/toaster"
 import { useTheme } from "next-themes"
 import { useToast } from "@/hooks/use-toast"
+import { BackgroundGradientAnimation } from "@/components/ui/background-gradient-animation";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -92,30 +93,32 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-100vw mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden h-screen">
-            <Sidebar open={open} setOpen={setOpen} animate={sidebarMode === 'auto'}>
-              <SidebarBody className="justify-between gap-10">
-                <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-                  <Logo />
-                  <div className="mt-8 flex flex-col gap-2">
-                    {links.map((link, idx) => (
-                      <SidebarLink key={idx} link={link} />
-                    ))}
+          <BackgroundGradientAnimation>
+            <div className="rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 max-w-100vw mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden h-screen">
+              <Sidebar open={open} setOpen={setOpen} animate={sidebarMode === 'auto'}>
+                <SidebarBody className="justify-between gap-10">
+                  <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+                    <Logo />
+                    <div className="mt-8 flex flex-col gap-2">
+                      {links.map((link, idx) => (
+                        <SidebarLink key={idx} link={link} />
+                      ))}
+                    </div>
                   </div>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <div className="hidden md:block">
-                    <SidebarModeToggle mode={sidebarMode} setMode={setSidebarMode} />
+                  <div className="z-50 flex flex-col gap-2">
+                    <div className="hidden md:block">
+                      <SidebarModeToggle mode={sidebarMode} setMode={setSidebarMode} />
+                    </div>
+                    <ThemeToggle />
                   </div>
-                  <ThemeToggle />
-                </div>
-              </SidebarBody>
-            </Sidebar>
-            <main className="flex-1 overflow-y-auto">
-              {children}
-            </main>
-            <Toaster />
-          </div>
+                </SidebarBody>
+              </Sidebar>
+              <main className="flex-1 overflow-y-auto">
+                {children}
+              </main>
+              <Toaster />
+            </div>
+          </BackgroundGradientAnimation>
         </ThemeProvider>
       </body>
     </html>
