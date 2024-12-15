@@ -22,10 +22,11 @@ export function InstanceCard({ projectName, sites, apps }: InstanceCardProps) {
     }
 
     return (
-        <Card className="w-[350px]">
+        <Card className="relative">
             <CardHeader>
                 <CardTitle>{projectName}</CardTitle>
-                <CardDescription>Frappe Instance</CardDescription>
+                {/* ToDo: implement detectiion for production or development environment */}
+                <CardDescription>Development Instance</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="grid w-full items-center gap-4">
