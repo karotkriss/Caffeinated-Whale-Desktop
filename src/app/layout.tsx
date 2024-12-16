@@ -128,7 +128,7 @@ export default function RootLayout({
 export const Logo = () => {
   return (
     <Link
-      href="#"
+      href="/"
       className="font-normal flex space-x-2 items-center text-sm text-black dark:text-white py-1 relative z-20"
     >
       <Image src="/cw.png" alt="Logo" width={25} height={25} />

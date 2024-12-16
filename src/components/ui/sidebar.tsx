@@ -4,6 +4,8 @@ import Link, { LinkProps } from "next/link";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { IconMenu2, IconX } from "@tabler/icons-react";
+import { Home } from "lucide-react";
+import Image from "next/image";
 
 interface Links {
   label: string;
@@ -119,6 +121,7 @@ export const MobileSidebar = ({
         )}
         {...props}
       >
+        <Logo />
         <div className="flex justify-end z-20 w-full">
           <IconMenu2
             className="text-neutral-800 dark:text-neutral-200"
@@ -187,6 +190,24 @@ export const SidebarLink = ({
         className="text-neutral-700 dark:text-neutral-200 text-sm group-hover/sidebar:translate-x-1 transition duration-150 whitespace-pre inline-block !p-0 !m-0"
       >
         {link.label}
+      </motion.span>
+    </Link>
+  );
+};
+
+export const Logo = () => {
+  return (
+    <Link
+      href="/"
+      className="font-normal flex space-x-2 items-center text-sm text-black dark:text-white py-1 relative z-20"
+    >
+      <Image src="/cw.png" alt="Logo" width={40} height={40} className="py-2" />
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="font-medium whitespace-pre"
+      >
+        Caffeinated Whale
       </motion.span>
     </Link>
   );
