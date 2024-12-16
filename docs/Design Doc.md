@@ -1,4 +1,3 @@
-
 ## Design Document for Electron App Using Next.js, TypeScript, Shadcn, and Python
 
 ### Overview
@@ -248,7 +247,3 @@ Use Electron Forge or a similar tool to package the application for distribution
 ```bash
 npm run build && npm run make
 ```
-
-### Conclusion
-
-This design document outlines a comprehensive plan for developing an Electron application that automates the deployment of Frappe environments using modern web technologies while enforcing TypeScript throughout the application. By leveraging Next.js App Router conventions, TypeScript, Tailwind CSS, Shadcn UI components, and Python, this application aims to provide a seamless experience for developers working with Frappe.
