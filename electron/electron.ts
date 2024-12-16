@@ -46,7 +46,6 @@ class ElectronApp {
     if (process.env.NODE_ENV === 'development') {
       this.mainWindow.webContents.openDevTools()
       
-      // Enable hot reloading in development
       require('electron-reload')(__dirname, {
         electron: path.join(__dirname, '..', 'node_modules', '.bin', 'electron'),
         hardResetMethod: 'exit'
@@ -59,6 +58,7 @@ class ElectronApp {
     ipcMain.handle('create-frappe-instance', this.createFrappeInstance.bind(this))
     ipcMain.handle('list-frappe-instances', this.listFrappeInstances.bind(this))
     ipcMain.handle('delete-frappe-instance', this.deleteFrappeInstance.bind(this))
+    ipcMain.handle('run-frappe-command', this.runFrappeCommand.bind(this))
   }
 
   private async findAvailablePort(event: Electron.IpcMainInvokeEvent, startPort: number = 8000): Promise<number> {
@@ -131,6 +131,32 @@ class ElectronApp {
       pythonProcess.stderr.on('data', (error: Buffer) => {
         console.error(`Delete instance error: ${error.toString().trim()}`)
         reject(error.toString())
+      })
+    })
+  }
+
+  private runFrappeCommand(event: Electron.IpcMainInvokeEvent, args: string[]): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const scriptPath = path.join(__dirname, '..', '..', 'backend', 'frappe_instance_info.py')
+      const pythonProcess = spawn('python', [scriptPath, ...args])
+
+      let output = ''
+      let errorOutput = ''
+
+      pythonProcess.stdout.on('data', (data) => {
+        output += data.toString()
+      })
+
+      pythonProcess.stderr.on('data', (data) => {
+        errorOutput += data.toString()
+      })
+
+      pythonProcess.on('close', (code) => {
+        if (code === 0) {
+          resolve(output)
+        } else {
+          reject(new Error(`Python script exited with code ${code}. Error: ${errorOutput}`))
+        }
       })
     })
   }

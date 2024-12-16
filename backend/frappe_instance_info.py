@@ -39,6 +39,7 @@ def main():
     group.add_argument("--get-site-app", metavar="SITE", help="Get installed apps for a specific site")
     group.add_argument("--get-apps", action="store_true", help="Get all available apps for the project")
     group.add_argument("--get-site-info", metavar="SITE", help="Get detailed information for a specific site")
+    group.add_argument("--all", action="store_true", help="Get all information for the project")
 
     args = parser.parse_args()
 
@@ -56,8 +57,10 @@ def main():
                 result = {"available_apps": project_info["available_apps"]}
             elif args.get_site_info:
                 result = get_site_info(args.project, args.get_site_info)
-            else:
+            elif args.all:
                 result = project_info
+            else:
+                raise Exception("No option specified")
         else:
             result = get_all_projects_info()
 
@@ -68,4 +71,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

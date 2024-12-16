@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import localFont from "next/font/local";
 import "./globals.css";
-import { IconBrandTabler, IconSettings, IconHome, IconSun, IconMoon, IconLayoutSidebar, IconLayoutSidebarLeftExpand } from "@tabler/icons-react";
+import { Terminal, Settings, House, Sun, Moon, PanelRight, PanelRightClose, Unplug } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -36,21 +36,28 @@ const links = [
     label: "Home",
     href: "#",
     icon: (
-      <IconHome className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      <House className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
   {
     label: "Terminal",
     href: "#",
     icon: (
-      <IconBrandTabler className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      <Terminal className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
+  },
+  {
+    label: "API Testing",
+    href: "/api-testing",
+    icon: (
+      <Unplug className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    )
   },
   {
     label: "Settings",
     href: "#",
     icon: (
-      <IconSettings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+      <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
     ),
   },
 ];
@@ -161,8 +168,8 @@ const SidebarModeToggle = ({ mode, setMode }: { mode: SidebarMode, setMode: (mod
   } as const;
 
   const icons = {
-    'auto': <IconLayoutSidebar className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
-    'open': <IconLayoutSidebarLeftExpand className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+    'auto': <PanelRight className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />,
+    'open': <PanelRightClose className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
   } as const;
 
   const labels = {
@@ -204,9 +211,9 @@ const ThemeToggle = () => {
         label: theme === 'dark' ? 'Light Mode' : 'Dark Mode',
         href: "#",
         icon: theme === 'dark' ? (
-          <IconSun className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+          <Sun className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
         ) : (
-          <IconMoon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+          <Moon className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
         ),
       }}
       onClick={toggleTheme}

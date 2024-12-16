@@ -5,6 +5,7 @@ interface ElectronAPI {
   createFrappeInstance: (instanceConfig: any) => Promise<string>
   listFrappeInstances: () => Promise<any[]>
   deleteFrappeInstance: (projectName: string) => Promise<void>
+  runFrappeCommand: (args: string[]) => Promise<string>
 }
 
 const electronAPI: ElectronAPI = {
@@ -12,6 +13,7 @@ const electronAPI: ElectronAPI = {
   createFrappeInstance: (instanceConfig: any) => ipcRenderer.invoke('create-frappe-instance', instanceConfig),
   listFrappeInstances: () => ipcRenderer.invoke('list-frappe-instances'),
   deleteFrappeInstance: (projectName: string) => ipcRenderer.invoke('delete-frappe-instance', projectName),
+  runFrappeCommand: (args: string[]) => ipcRenderer.invoke('run-frappe-command', args),
 }
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI)
