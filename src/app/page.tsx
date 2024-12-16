@@ -30,7 +30,7 @@ export default function Home() {
   }, [])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-between flex-1">
+    <div className="flex h-full flex-col items-center justify-between flex-1">
       <div className="z-50 font-mono text-sm md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 bg-opacity-25 dark:bg-opacity-25 sflex flex-col gap-2 flex-1 w-full overflow-y-auto">
 
         <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
