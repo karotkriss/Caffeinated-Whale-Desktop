@@ -6,7 +6,7 @@ This document outlines the design and implementation strategy for an Electron ap
 
 ### Technology Stack
 
-- **Frontend**: Next.js (with TypeScript, Tailwind CSS, App Routed, Route Groutes, Shadcn UI)
+- **Frontend**: Next.js (with TypeScript, Tailwind CSS, App Router, Shadcn UI)
 - **Backend**: Python (for managing Frappe instances)
 - **Containerization**: Docker (to manage Frappe instances)
 - **Real-time Communication**: WebSockets (for terminal integration)
