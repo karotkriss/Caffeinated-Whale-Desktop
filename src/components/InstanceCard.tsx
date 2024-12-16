@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge"
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Play, RefreshCcw, Square } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface InstanceCardProps {
     projectName: string
@@ -23,13 +25,34 @@ export function InstanceCard({ projectName, sites, apps }: InstanceCardProps) {
 
     return (
         <Card className="relative">
-            <CardHeader>
-                <CardTitle>{projectName}</CardTitle>
-                {/* ToDo: implement detectiion for production or development environment */}
-                <CardDescription>Development Instance</CardDescription>
-            </CardHeader>
+            <div className="flex justify-between">
+                <CardHeader className='flex justify-between'>
+                    <CardTitle>{projectName}</CardTitle>
+                    {/* ToDo: implement detectiion for production or development environment */}
+                    <CardDescription>Development Instance</CardDescription>
+                </CardHeader>
+                <CardHeader>
+                    <div className="flex justify-between gap-2">
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button variant={isRunning ? "destructive" : "ghost"} onClick={toggleInstance}>
+                                        {isRunning ? <Square /> : <Play />}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    {isRunning ? "Stop Container in Stack" : "Start Containers in Stack"}
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        <Button variant="ghost">
+                            <RefreshCcw />
+                        </Button>
+                    </div>
+                </CardHeader>
+            </div>
             <CardContent>
-                <div className="grid w-full items-center gap-4">
+                <div className="grid w-full items-center gap-4 flex-1">
                     <div className="flex flex-col space-y-1.5">
                         <Label htmlFor="sites">Sites</Label>
                         <div className="flex flex-wrap gap-2">
@@ -48,10 +71,7 @@ export function InstanceCard({ projectName, sites, apps }: InstanceCardProps) {
                     </div>
                 </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
-                <Button variant={isRunning ? "destructive" : "default"} onClick={toggleInstance}>
-                    {isRunning ? "Stop" : "Start"}
-                </Button>
+            <CardFooter className="flex justify-between sticky buttom-0">
                 <Sheet open={openSheet} onOpenChange={setOpenSheet}>
                     <SheetTrigger asChild>
                         <Button variant="outline">Settings</Button>
