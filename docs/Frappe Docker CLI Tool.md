@@ -1,22 +1,18 @@
 ## Documentation for Frappe Docker CLI Tool
 
 ### Overview
-
 The Frappe Docker CLI Tool is designed to manage and retrieve information about Frappe instances running in Docker containers. It utilizes a SQLite database to store project, container, site, and app information, allowing users to efficiently query and update their Frappe environments.
 
 ### Features
-
 - **Database Initialization**: Automatically initializes a SQLite database to store project and container information.
 - **Container Interaction**: Connects to Docker containers to find bench directories and list sites and apps.
 - **Information Retrieval**: Provides commands to retrieve detailed information about projects, sites, and installed applications.
 
 ### Architecture
-
 The tool is composed of three main scripts:
-
-1. **Database Operations (`db_operations.py`)**: Handles database initialization, updates, and queries.
-2. **Update Script (`update.py`)**: Interacts with Docker containers to update the database with current information about projects and their associated sites and apps.
-3. **Info Retrieval Script (`info.py`)**: Provides a command-line interface for users to retrieve information about projects and sites.
+1. **Database Operations (`backend/db_operations.py`)**: Handles database initialization, updates, and queries.
+2. **Update Script (`backend/update_db.py`)**: Interacts with Docker containers to update the database with current information about projects and their associated sites and apps.
+3. **Info Retrieval Script (`backend/frappe_instance_info.py`)**: Provides a command-line interface for users to retrieve information about projects and sites.
 
 ### Database Schema
 
@@ -58,42 +54,78 @@ The SQLite database consists of the following tables:
 
 #### Command-Line Interface (CLI)
 
-To use the CLI tool, execute the `info.py` script with appropriate arguments. Below are some common commands:
+##### Update Database Information
+To update Frappe instance information in the database, execute the `backend/update_db.py` script with appropriate arguments:
 
-1. **Get All Projects Information**
+```bash
+python backend/update_db.py [-h] [-p PROJECT] [-s SITE] [--bench] [--sites] [--apps] [--all]
+```
 
-   ```bash
-   python info.py
-   ```
+**Options:**
+- `-h, --help`: Show help message and exit.
+- `-p PROJECT, --project PROJECT`: Docker Compose project name to update (default: update all projects).
+- `-s SITE, --site SITE`: Specific site to update within a project.
+- `--bench`: Update bench directory information.
+- `--sites`: Update sites information.
+- `--apps`: Update available apps information.
+- `--all`: Update all information (default if no specific update is selected).
 
-2. **Get Sites for a Specific Project**
+**Usage Examples:**
+- Update all projects:
+  ```bash
+  python backend/update_db.py --all
+  ```
 
-   ```bash
-   python info.py -p <project_name> --get-sites
-   ```
+- Update a specific project:
+  ```bash
+  python backend/update_db.py -p my_project --bench --sites --apps
+  ```
 
-3. **Get Installed Apps for a Specific Site**
+- Update a specific site within a project:
+  ```bash
+  python backend/update_db.py -p my_project -s my_site --apps
+  ```
 
-   ```bash
-   python info.py -p <project_name> --get-site-app <site_name>
-   ```
+##### Retrieve Frappe Instance Information
+To retrieve information about Frappe instances, execute the `backend/frappe_instance_info.py` script with appropriate arguments:
 
-4. **Get All Available Apps for a Project**
+```bash
+python backend/frappe_instance_info.py [-h] [-p PROJECT] [--get-sites | --get-site-app SITE | --get-apps | --get-site-info SITE]
+```
 
-   ```bash
-   python info.py -p <project_name> --get-apps
-   ```
+**Options:**
+- `-h, --help`: Show help message and exit.
+- `-p PROJECT, --project PROJECT`: Docker Compose project name.
+- `--get-sites`: Get all sites for the project.
+- `--get-site-app SITE`: Get installed apps for a specific site.
+- `--get-apps`: Get all available apps for the project.
+- `--get-site-info SITE`: Get detailed information for a specific site.
 
-5. **Get Detailed Information for a Specific Site**
+**Usage Examples:**
+- Get all projects' information:
+  ```bash
+  python backend/frappe_instance_info.py
+  ```
 
-   ```bash
-   python info.py -p <project_name> --get-site-info <site_name>
-   ```
+- Get all sites for a specific project:
+  ```bash
+  python backend/frappe_instance_info.py -p my_project --get-sites
+  ```
 
-6. **Update Database Information**
-   ```bash
-   python update.py --project <project_name> --site <site_name> --bench --sites --apps
-   ```
+- Get installed apps for a specific site:
+  ```bash
+  python backend/frappe_instance_info.py -p my_project --get-site-app my_site
+  ```
+
+- Get all available apps for a project:
+  ```bash
+  python backend/frappe_instance_info.py -p my_project --get-apps
+  ```
+
+- Get detailed information for a specific site:
+  ```bash
+  python backend/frappe_instance_info.py -p my_project --get-site-info my_site
+  ```
 
 ### Diagrams
 
