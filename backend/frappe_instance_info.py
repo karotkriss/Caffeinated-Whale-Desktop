@@ -36,7 +36,7 @@ def main():
     parser.add_argument("-p", "--project", help="Docker Compose project name")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--get-sites", action="store_true", help="Get all sites for the project")
-    group.add_argument("--get-site-app", metavar="SITE", help="Get installed apps for a specific site")
+    group.add_argument("--get-site-apps", metavar="SITE", help="Get installed apps for a specific site")
     group.add_argument("--get-apps", action="store_true", help="Get all available apps for the project")
     group.add_argument("--get-site-info", metavar="SITE", help="Get detailed information for a specific site")
     group.add_argument("--all", action="store_true", help="Get all information for the project")
@@ -51,8 +51,8 @@ def main():
             
             if args.get_sites:
                 result = {"sites": project_info["sites"]}
-            elif args.get_site_app:
-                result = get_site_apps(args.project, args.get_site_app)
+            elif args.get_site_apps:
+                result = get_site_apps(args.project, args.get_site_apps)
             elif args.get_apps:
                 result = {"available_apps": project_info["available_apps"]}
             elif args.get_site_info:
