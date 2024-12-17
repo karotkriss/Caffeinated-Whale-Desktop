@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 
 export default function FrappeCommandsPage() {
@@ -12,29 +12,28 @@ export default function FrappeCommandsPage() {
   const [siteName, setSiteName] = useState('')
   const [output, setOutput] = useState('')
 
-  const runCommand = async (command: string, ...additionalArgs: string[]) => {
+  const runCommand = async (command: string) => {
     try {
-      const args = [command]
-      if (projectName) args.push('-p', projectName)
-      if (additionalArgs.length > 0) args.push(...additionalArgs)
-      const result = await window.electronAPI.runFrappeCommand(args)
-      setOutput(result)
+      const args = command.split(' ');
+      console.log('Sending args:', args); // For debugging
+      const result = await window.electronAPI.runFrappeCommand(args);
+      setOutput(result);
     } catch (error) {
-      setOutput(`Error: ${error.message}`)
+      setOutput(`Error: ${(error as Error).message}`);
     }
-  }
+  };
 
   return (
-    <div className="z-50 z-50 container mx-auto p-4">
-      <h1 className="z-50 text-2xl font-bold mb-4">Frappe Commands Tester</h1>
-      <Card className="z-50 mb-4">
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Frappe Commands Tester</h1>
+      <Card className="mb-4">
         <CardHeader>
           <CardTitle>Command Parameters</CardTitle>
           <CardDescription>Set the project and site names for the commands</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="z-50 grid w-full items-center gap-4">
-            <div className="z-50 flex flex-col space-y-1.5">
+          <div className="grid w-full items-center gap-4">
+            <div className="flex flex-col space-y-1.5">
               <Label htmlFor="projectName">Project Name</Label>
               <Input
                 id="projectName"
@@ -43,7 +42,7 @@ export default function FrappeCommandsPage() {
                 placeholder="Enter project name"
               />
             </div>
-            <div className="z-50 flex flex-col space-y-1.5">
+            <div className="flex flex-col space-y-1.5">
               <Label htmlFor="siteName">Site Name</Label>
               <Input
                 id="siteName"
@@ -55,12 +54,12 @@ export default function FrappeCommandsPage() {
           </div>
         </CardContent>
       </Card>
-      <div className="z-50 grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <Button onClick={() => runCommand('--all')}>Get All Projects Info</Button>
-        <Button onClick={() => runCommand('-p', projectName, '--get-sites')}>Get Sites</Button>
-        <Button onClick={() => runCommand('--get-apps')}>Get Apps</Button>
-        <Button onClick={() => runCommand('--get-site-app', siteName)}>Get Site Apps</Button>
-        <Button onClick={() => runCommand('--get-site-info', siteName)}>Get Site Info</Button>
+        <Button onClick={() => runCommand(`-p ${projectName} --get-sites`)}>Get Sites</Button>
+        <Button onClick={() => runCommand(`-p ${projectName} --get-apps`)}>Get Apps</Button>
+        <Button onClick={() => runCommand(`-p ${projectName} --get-site-apps ${siteName}`)}>Get Site Apps</Button>
+        <Button onClick={() => runCommand(`-p ${projectName} --get-site-info ${siteName}`)}>Get Site Info</Button>
       </div>
       <Card>
         <CardHeader>
@@ -70,7 +69,7 @@ export default function FrappeCommandsPage() {
           <Textarea
             value={output}
             readOnly
-            className="z-100 h-64"
+            className="h-64"
             placeholder="Command output will appear here"
           />
         </CardContent>

@@ -137,28 +137,29 @@ class ElectronApp {
 
   private runFrappeCommand(event: Electron.IpcMainInvokeEvent, args: string[]): Promise<string> {
     return new Promise((resolve, reject) => {
-      const scriptPath = path.join(__dirname, '..', '..', 'backend', 'frappe_instance_info.py')
-      const pythonProcess = spawn('python', [scriptPath, ...args])
+      const scriptPath = path.join(__dirname, '..', '..', 'backend', 'frappe_instance_info.py');
+      console.log('Executing Python script with args:', args); // For debugging
+      const pythonProcess = spawn('python', [scriptPath, ...args]);
 
-      let output = ''
-      let errorOutput = ''
+      let output = '';
+      let errorOutput = '';
 
       pythonProcess.stdout.on('data', (data) => {
-        output += data.toString()
-      })
+        output += data.toString();
+      });
 
       pythonProcess.stderr.on('data', (data) => {
-        errorOutput += data.toString()
-      })
+        errorOutput += data.toString();
+      });
 
       pythonProcess.on('close', (code) => {
         if (code === 0) {
-          resolve(output)
+          resolve(output);
         } else {
-          reject(new Error(`Python script exited with code ${code}. Error: ${errorOutput}`))
+          reject(new Error(`Python script exited with code ${code}. Error: ${errorOutput}`));
         }
-      })
-    })
+      });
+    });
   }
 }
 
