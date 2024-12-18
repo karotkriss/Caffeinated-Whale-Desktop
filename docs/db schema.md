@@ -46,6 +46,9 @@ erDiagram
         text domain UK
         text status
         text environment
+        text db_user
+        text db_password
+        integer development_mode
         date created_at
         date updated_at
     }

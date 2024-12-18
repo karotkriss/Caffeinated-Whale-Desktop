@@ -57,7 +57,7 @@ export default function FrappeCommandsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <Button onClick={() => runCommand('--all')}>Get All Projects Info</Button>
         <Button onClick={() => runCommand(`-p ${projectName} --get-sites`)}>Get Sites</Button>
-        <Button onClick={() => runCommand(`-p ${projectName} --get-apps`)}>Get Apps</Button>
+        <Button onClick={() => runCommand(`--get-apps`)}>Get Apps</Button>
         <Button onClick={() => runCommand(`-p ${projectName} --get-site-apps ${siteName}`)}>Get Site Apps</Button>
         <Button onClick={() => runCommand(`-p ${projectName} --get-site-info ${siteName}`)}>Get Site Info</Button>
       </div>

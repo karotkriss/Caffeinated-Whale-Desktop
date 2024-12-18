@@ -1,9 +1,20 @@
-# ToDo: get site db user and password 
-
 import docker
 import json
 import argparse
-from db_operations import update_project, get_project_info
+from datetime import datetime
+import secrets
+import string
+from db_operations import (
+    get_db_connection,
+    create_or_update_project,
+    create_or_update_container,
+    create_or_update_instance,
+    create_or_update_site,
+    create_or_update_app,
+    create_or_update_instance_app,
+    create_site_app,
+    get_site_id
+)
 
 def is_bench_directory(container, path):
     required_files = [
@@ -27,13 +38,11 @@ def find_bench_directory_in_container(container):
     
     for search_root in set(search_roots):  # Use set to remove duplicates
         try:
-            # Check if directory exists
             exit_code, _ = container.exec_run(f"test -d {search_root}")
             if exit_code != 0:
                 print(f"Directory {search_root} does not exist")
                 continue
 
-            # List directories to get more context
             list_cmd = f"find {search_root} -maxdepth {search_depth} -type d -not -path '*/\.*'"
             exit_code, output = container.exec_run(list_cmd)
 
@@ -41,15 +50,12 @@ def find_bench_directory_in_container(container):
                 print(f"Error executing find command in {search_root}")
                 continue
 
-            # Decode and process output
             directories = output.decode("utf-8").splitlines()
             print(f"Searching in {search_root}, found {len(directories)} directories")
 
             for dirpath in directories:
-                # Extended logging for diagnostics
                 print(f"Checking directory: {dirpath}")
                 
-                # Check for bench-specific files/directories
                 checks = [
                     f"test -d {dirpath}/sites",
                     f"test -d {dirpath}/apps",
@@ -68,26 +74,55 @@ def find_bench_directory_in_container(container):
         except Exception as e:
             print(f"Error searching for bench directory in {search_root}: {e}")
 
-        # If no bench directory found
-        print("No bench directory found. Possible reasons:")
-        print("1. Bench may be installed in a non-standard location")
-        print("2. Container might not have Frappe/Bench installed")
-        print("3. Search roots and depth may need adjustment")
-        print("4. Container might not be running")
+    print("No bench directory found. Possible reasons:")
+    print("1. Bench may be installed in a non-standard location")
+    print("2. Container might not have Frappe/Bench installed")
+    print("3. Search roots and depth may need adjustment")
+    print("4. Container might not be running")
     
     return None
 
 def get_sites(container, bench_dir):
-    exit_code, _ = container.exec_run(f"test -d {bench_dir}/sites")
-    if exit_code != 0:
-        return []
-    cmd = f"bash -c 'ls {bench_dir}/sites | grep -v 'apps' | grep -v '.json' | grep -v 'assets''"
+    sites = []
+    cmd = f"find {bench_dir}/sites -maxdepth 1 -mindepth 1 -type d"
     exit_code, output = container.exec_run(cmd)
     if exit_code != 0:
         raise Exception(f"Error executing command: {cmd}")
     
-    sites = output.decode('utf-8').replace('\r', '').strip().split('\n')
-    return [site for site in sites if site]
+    potential_sites = output.decode('utf-8').strip().split('\n')
+    
+    for site_path in potential_sites:
+        site_name = site_path.split('/')[-1]
+        if site_name in ['assets', 'apps']:
+            continue
+        
+        # Check for required folders and files
+        required_items = ['locks', 'logs', 'private', 'public', 'site_config.json']
+        is_valid_site = all(
+            container.exec_run(f"test -e {site_path}/{item}")[0] == 0
+            for item in required_items
+        )
+        
+        if is_valid_site:
+            # Read site_config.json
+            cat_cmd = f"cat {site_path}/site_config.json"
+            exit_code, config_output = container.exec_run(cat_cmd)
+            if exit_code == 0:
+                try:
+                    site_config = json.loads(config_output.decode('utf-8'))
+                    sites.append({
+                        'name': site_name,
+                        'db_name': site_config.get('db_name', ''),
+                        'db_password': site_config.get('db_password', ''),
+                        'db_type': site_config.get('db_type', ''),
+                        'developer_mode': site_config.get('developer_mode', 0)
+                    })
+                except json.JSONDecodeError:
+                    print(f"Error parsing site_config.json for {site_name}")
+            else:
+                print(f"Error reading site_config.json for {site_name}")
+    
+    return sites
 
 def get_available_apps(container, bench_dir):
     exit_code, _ = container.exec_run(f"test -d {bench_dir}/apps")
@@ -101,6 +136,10 @@ def get_available_apps(container, bench_dir):
     apps = output.decode('utf-8').replace('\r', '').strip().split('\n')
     return [app for app in apps if app]
 
+def generate_db_password():
+    alphabet = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(alphabet) for i in range(16))
+
 def update_database(project_name=None, specific_site=None, update_bench=True, update_sites=True, update_apps=True):
     client = docker.from_env()
     filters = {"label": "com.docker.compose.service=frappe"}
@@ -110,27 +149,47 @@ def update_database(project_name=None, specific_site=None, update_bench=True, up
 
     for container in containers:
         current_project = container.labels.get("com.docker.compose.project", "unknown")
-        existing_info = get_project_info(current_project)
+        project_id = create_or_update_project(current_project, "Frappe project")
 
-        bench_dir = find_bench_directory_in_container(container) if update_bench else existing_info.get("bench_directory") if existing_info else None
+        container_id = create_or_update_container(project_id, container.id, "frappe", container.status)
+        
+        bench_dir = find_bench_directory_in_container(container) if update_bench else None
         
         if bench_dir:
-            # Get all sites if no specific site is provided
-            sites = get_sites(container, bench_dir) if update_sites else existing_info.get("sites", []) if existing_info else []
+            instance_id = create_or_update_instance(container_id, current_project, bench_dir, "active", "latest")
             
-            # Filter sites if a specific site is provided
-            if specific_site:
-                sites = [site for site in sites if site == specific_site]
-                if not sites:
-                    print(f"Site {specific_site} not found in project {current_project}")
-                    continue
+            if update_sites:
+                sites = get_sites(container, bench_dir)
+                for site in sites:
+                    if not specific_site or site['name'] == specific_site:
+                        create_or_update_site(
+                            instance_id,
+                            container_id,
+                            site['name'],
+                            f"{site['name']}.localhost",
+                            site['db_name'],
+                            site['db_password'],
+                            "active",
+                            "production",
+                            site['developer_mode'],
+                            site['db_type']
+                        )
+            
+            if update_apps:
+                apps = get_available_apps(container, bench_dir)
+                for app in apps:
+                    app_id = create_or_update_app(app, "", "latest", "custom", datetime.now())
+                    create_or_update_instance_app(instance_id, app_id, "latest", "installed", "manual")
+                    
+                    if update_sites:
+                        for site in sites:
+                            if not specific_site or site['name'] == specific_site:
+                                site_id = get_site_id(instance_id, site['name'])
+                                if site_id:
+                                    create_site_app(site_id, app_id, "latest", "installed", "")
 
-            apps = get_available_apps(container, bench_dir) if update_apps else existing_info.get("available_apps", []) if existing_info else []
-            
-            update_project(current_project, container.id, bench_dir, sites, apps)
             print(f"Updated information for project: {current_project}")
             
-            # If a specific site was updated, print its details
             if specific_site:
                 print(f"Updated site: {specific_site}")
         else:
@@ -147,7 +206,6 @@ def main():
 
     args = parser.parse_args()
 
-    # Validate site update requires project specification
     if args.site and not args.project:
         parser.error("--site requires --project to be specified")
 
@@ -155,7 +213,6 @@ def main():
     update_sites = args.sites or args.all
     update_apps = args.apps or args.all
 
-    # If no specific update is selected, update all
     if not (update_bench or update_sites or update_apps):
         update_bench = update_sites = update_apps = True
 
@@ -169,3 +226,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
