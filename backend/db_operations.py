@@ -1,171 +1,208 @@
 import sqlite3
-import json
+import logging
+from datetime import datetime
 from pathlib import Path
 
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+# Database file path
 DB_FILE = Path(__file__).parent / "frappe_instances.db"
 
-def init_db():
+def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    conn = get_db_connection()
     cursor = conn.cursor()
+
+    # Create PROJECTS table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS projects (
-        id INTEGER PRIMARY KEY,
-        name TEXT UNIQUE NOT NULL
+    CREATE TABLE IF NOT EXISTS PROJECTS (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT UNIQUE NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+
+    # Create CONTAINERS table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS containers (
-        id INTEGER PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS CONTAINERS (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         project_id INTEGER,
         container_id TEXT UNIQUE NOT NULL,
-        bench_dir TEXT,
-        FOREIGN KEY (project_id) REFERENCES projects (id)
+        container_type TEXT,
+        status TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (project_id) REFERENCES PROJECTS (id)
     )
     ''')
+
+    # Create INSTANCES table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS sites (
-        id INTEGER PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS INSTANCES (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         container_id INTEGER,
-        name TEXT NOT NULL,
-        UNIQUE(container_id, name),
-        FOREIGN KEY (container_id) REFERENCES containers (id)
+        name TEXT UNIQUE NOT NULL,
+        directory TEXT,
+        db_root_password TEXT,
+        status TEXT,
+        version TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (container_id) REFERENCES CONTAINERS (id)
     )
     ''')
+
+    # Create SITES table
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS apps (
-        id INTEGER PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS SITES (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        instance_id INTEGER,
         container_id INTEGER,
-        name TEXT NOT NULL,
-        UNIQUE(container_id, name),
-        FOREIGN KEY (container_id) REFERENCES containers (id)
+        name TEXT UNIQUE NOT NULL,
+        domain TEXT UNIQUE NOT NULL,
+        status TEXT,
+        environment TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (instance_id) REFERENCES INSTANCES (id),
+        FOREIGN KEY (container_id) REFERENCES CONTAINERS (id)
     )
     ''')
+
+    # Create APPS table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS APPS (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        app_name TEXT UNIQUE NOT NULL,
+        remote_url TEXT,
+        version TEXT,
+        category TEXT,
+        released_at TIMESTAMP
+    )
+    ''')
+
+    # Create INSTANCE_APPS table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS INSTANCE_APPS (
+        instance_id INTEGER,
+        app_id INTEGER,
+        version TEXT,
+        status TEXT,
+        installed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        install_method TEXT,
+        PRIMARY KEY (instance_id, app_id),
+        FOREIGN KEY (instance_id) REFERENCES INSTANCES (id),
+        FOREIGN KEY (app_id) REFERENCES APPS (id)
+    )
+    ''')
+
+    # Create SITE_APPS table
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS SITE_APPS (
+        site_id INTEGER,
+        app_id INTEGER,
+        version TEXT,
+        status TEXT,
+        installed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        configuration_notes TEXT,
+        PRIMARY KEY (site_id, app_id),
+        FOREIGN KEY (site_id) REFERENCES SITES (id),
+        FOREIGN KEY (app_id) REFERENCES APPS (id)
+    )
+    ''')
+
     conn.commit()
     conn.close()
+    logging.info("Database initialized successfully")
 
-def update_project(project_name, container_id, bench_dir, sites, apps):
-    conn = sqlite3.connect(DB_FILE)
+# CRUD operations for PROJECTS table
+def create_project(name, description):
+    conn = get_db_connection()
     cursor = conn.cursor()
-    
-    # Insert or update project
-    cursor.execute('INSERT OR IGNORE INTO projects (name) VALUES (?)', (project_name,))
-    cursor.execute('SELECT id FROM projects WHERE name = ?', (project_name,))
-    project_id = cursor.fetchone()[0]
-    
-    # Insert or update container
-    cursor.execute('''
-    INSERT OR REPLACE INTO containers (project_id, container_id, bench_dir)
-    VALUES (?, ?, ?)
-    ''', (project_id, container_id, bench_dir))
-    container_db_id = cursor.lastrowid
-    
-    # Update sites
-    cursor.execute('DELETE FROM sites WHERE container_id = ?', (container_db_id,))
-    for site in set(sites):  # Use set to remove duplicates
-        cursor.execute('INSERT OR IGNORE INTO sites (container_id, name) VALUES (?, ?)', (container_db_id, site))
-    
-    # Update apps
-    cursor.execute('DELETE FROM apps WHERE container_id = ?', (container_db_id,))
-    for app in set(apps):  # Use set to remove duplicates
-        cursor.execute('INSERT OR IGNORE INTO apps (container_id, name) VALUES (?, ?)', (container_db_id, app))
-    
-    conn.commit()
-    conn.close()
-
-
-def get_site_apps(project_name, site_name):
-    # Add a query to filter apps specifically for the given site
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-    SELECT a.name 
-    FROM projects p
-    JOIN containers c ON p.id = c.project_id
-    JOIN sites s ON c.id = s.container_id
-    JOIN apps a ON c.id = a.container_id
-    WHERE p.name = ? AND s.name = ?
-    ''', (project_name, site_name))
-    
-    apps = [row[0] for row in cursor.fetchall()]
-    conn.close()
-    
-    return {"site": site_name, "installed_apps": apps}
-
-def get_project_info(project_name):
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    
-    cursor.execute('''
-    SELECT c.bench_dir, s.name as site_name, GROUP_CONCAT(DISTINCT a.name) as apps
-    FROM projects p
-    JOIN containers c ON p.id = c.project_id
-    LEFT JOIN sites s ON c.id = s.container_id
-    LEFT JOIN apps a ON c.id = a.container_id
-    WHERE p.name = ?
-    GROUP BY c.id, s.id
-    ''', (project_name,))
-    
-    rows = cursor.fetchall()
-    if not rows:
+    try:
+        cursor.execute('''
+        INSERT INTO PROJECTS (name, description)
+        VALUES (?, ?)
+        ''', (name, description))
+        conn.commit()
+        logging.info(f"Project '{name}' created successfully")
+        return cursor.lastrowid
+    except sqlite3.IntegrityError:
+        logging.error(f"Project '{name}' already exists")
         return None
-    
-    result = {
-        "project_name": project_name,
-        "bench_directory": rows[0]['bench_dir'],
-        "sites": [],
-        "available_apps": set()
-    }
-    
-    for row in rows:
-        if row['site_name']:
-            result["sites"].append(row['site_name'])
-        if row['apps']:
-            result["available_apps"].update(row['apps'].split(','))
-    
-    result["available_apps"] = list(result["available_apps"])
-    
-    conn.close()
-    return result
+    finally:
+        conn.close()
 
-def get_all_projects_info():
-    conn = sqlite3.connect(DB_FILE)
-    conn.row_factory = sqlite3.Row
+def get_project(project_id):
+    conn = get_db_connection()
     cursor = conn.cursor()
-    
-    cursor.execute('''
-    SELECT p.name as project_name, c.bench_dir, s.name as site_name, GROUP_CONCAT(DISTINCT a.name) as apps
-    FROM projects p
-    JOIN containers c ON p.id = c.project_id
-    LEFT JOIN sites s ON c.id = s.container_id
-    LEFT JOIN apps a ON c.id = a.container_id
-    GROUP BY p.id, c.id, s.id
-    ''')
-    
-    rows = cursor.fetchall()
-    projects = {}
-    
-    for row in rows:
-        project_name = row['project_name']
-        if project_name not in projects:
-            projects[project_name] = {
-                "bench_directory": row['bench_dir'],
-                "sites": [],
-                "available_apps": set()
-            }
-        
-        if row['site_name']:
-            projects[project_name]["sites"].append(row['site_name'])
-        if row['apps']:
-            projects[project_name]["available_apps"].update(row['apps'].split(','))
-    
-    for project in projects.values():
-        project["available_apps"] = list(project["available_apps"])
-    
+    cursor.execute('SELECT * FROM PROJECTS WHERE id = ?', (project_id,))
+    project = cursor.fetchone()
     conn.close()
-    return {"projects": projects}
+    return dict(project) if project else None
 
-# Initialize the database when this module is imported
+def update_project(project_id, name=None, description=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    update_fields = []
+    update_values = []
+    if name:
+        update_fields.append('name = ?')
+        update_values.append(name)
+    if description:
+        update_fields.append('description = ?')
+        update_values.append(description)
+    update_values.append(datetime.now())
+    update_values.append(project_id)
+    
+    try:
+        cursor.execute(f'''
+        UPDATE PROJECTS
+        SET {', '.join(update_fields)}, updated_at = ?
+        WHERE id = ?
+        ''', update_values)
+        conn.commit()
+        logging.info(f"Project {project_id} updated successfully")
+        return True
+    except sqlite3.Error as e:
+        logging.error(f"Error updating project {project_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
+def delete_project(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute('DELETE FROM PROJECTS WHERE id = ?', (project_id,))
+        conn.commit()
+        logging.info(f"Project {project_id} deleted successfully")
+        return True
+    except sqlite3.Error as e:
+        logging.error(f"Error deleting project {project_id}: {e}")
+        return False
+    finally:
+        conn.close()
+
+# Similar CRUD operations should be implemented for other tables:
+# CONTAINERS, INSTANCES, SITES, APPS, INSTANCE_APPS, and SITE_APPS
+
+# Helper function to get all projects
+def get_all_projects():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM PROJECTS')
+    projects = cursor.fetchall()
+    conn.close()
+    return [dict(project) for project in projects]
+
+# Initialize the database
 init_db()
 
